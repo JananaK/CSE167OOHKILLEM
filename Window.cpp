@@ -1,17 +1,21 @@
 #include "window.h"
 
 const char* window_title = "GLFW Starter Project";
-Cube * cube;
+//Cube * cube;
+OBJObject * object;
 GLint shaderProgram;
 
 // On some systems you need to change this to the absolute path
-#define VERTEX_SHADER_PATH "../shader.vert"
-#define FRAGMENT_SHADER_PATH "../shader.frag"
+#define VERTEX_SHADER_PATH "/Users/janic/OneDrive/Documents/UCSD/UCSD hw and papers/Fall 2017/CSE167StarterCode2-master/CSE167StarterCode2-master/shader.vert"
+#define FRAGMENT_SHADER_PATH "/Users/janic/OneDrive/Documents/UCSD/UCSD hw and papers/Fall 2017/CSE167StarterCode2-master/CSE167StarterCode2-master/shader.frag"
 
 // Default camera parameters
 glm::vec3 cam_pos(0.0f, 0.0f, 20.0f);		// e  | Position of camera
 glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
+
+glm::vec3 Window::Translation(0, 0, 0);		// keeps track of location
+glm::vec3 Window::Scale(1.0f, 1.0f, 1.0f);	// keeps track of scaling and orientation
 
 int Window::width;
 int Window::height;
@@ -21,7 +25,8 @@ glm::mat4 Window::V;
 
 void Window::initialize_objects()
 {
-	cube = new Cube();
+	//cube = new Cube();
+	object = new OBJObject("bunny.obj");
 
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
@@ -30,7 +35,7 @@ void Window::initialize_objects()
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up()
 {
-	delete(cube);
+	delete(object);
 	glDeleteProgram(shaderProgram);
 }
 
@@ -101,7 +106,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 void Window::idle_callback()
 {
 	// Call the update function the cube
-	cube->update();
+	object->update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -113,7 +118,7 @@ void Window::display_callback(GLFWwindow* window)
 	glUseProgram(shaderProgram);
 	
 	// Render the cube
-	cube->draw(shaderProgram);
+	object->draw(shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -126,6 +131,69 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	// Check for a key press
 	if (action == GLFW_PRESS)
 	{
+		// Check if 'X' was pressed, moves right
+		if (key == GLFW_KEY_X && mods & GLFW_MOD_SHIFT)
+		{
+			object->translate(glm::vec3(1.0f, 0, 0));
+			Translation += glm::vec3(1.0f, 0, 0);
+		}
+
+		// Check if 'x' was pressed, moves left
+		else if (key == GLFW_KEY_X)
+		{
+			object->translate(glm::vec3(-1.0f, 0, 0));
+			Translation += glm::vec3(-1.0f, 0, 0);
+		}
+
+		// Check if 'Y' was pressed, moves up
+		if (key == GLFW_KEY_Y && mods & GLFW_MOD_SHIFT)
+		{
+			object->translate(glm::vec3(0, 1.0f, 0));
+			Translation += glm::vec3(0, 1.0f, 0);
+		}
+
+		// Check if 'y' was pressed, moves down
+		else if (key == GLFW_KEY_Y)
+		{
+			object->translate(glm::vec3(0, -1.0f, 0));
+			Translation += glm::vec3(0, -1.0f, 0);
+		}
+
+		// Check if 'Z' was pressed, moves into screen
+		if (key == GLFW_KEY_Z && mods & GLFW_MOD_SHIFT)
+		{
+			object->translate(glm::vec3(0, 0, 1.0f));
+			Translation += glm::vec3(0, 0, 1.0f);
+		}
+
+		// Check if 'z' was pressed, moves out of screen
+		else if (key == GLFW_KEY_Z)
+		{
+			object->translate(glm::vec3(0, 0, -1.0f));
+			Translation += glm::vec3(0, 0, -1.0f);
+		}
+
+		// Check if 'S' was pressed, scales up around object's center
+		if (key == GLFW_KEY_S && mods & GLFW_MOD_SHIFT)
+		{
+			object->scale(glm::vec3(1.1f, 1.1f, 1.1f));
+			Scale *= glm::vec3(1.1f, 1.1f, 1.1f);
+		}
+
+		// Check if 's' was pressed, scales down around object's center
+		else if (key == GLFW_KEY_S)
+		{
+			object->scale(glm::vec3(0.9f, 0.9f, 0.9f));
+			Scale *= glm::vec3(0.9f, 0.9f, 0.9f);
+
+		}
+
+		// Check if 'j' was pressed, center!
+		if (key == GLFW_KEY_J)
+		{
+			object->centerScale();
+		}
+
 		// Check if escape was pressed
 		if (key == GLFW_KEY_ESCAPE)
 		{

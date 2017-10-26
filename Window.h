@@ -11,6 +11,7 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "Cube.h"
+#include "OBJObject.h"
 #include "shader.h"
 
 class Window
@@ -18,8 +19,16 @@ class Window
 public:
 	static int width;
 	static int height;
+
+	static float xMax, xMin, yMax, yMin, zMax, zMin;
+	static glm::vec3 midPoint;
+
 	static glm::mat4 P; // P for projection
 	static glm::mat4 V; // V for view
+
+	static glm::vec3 Translation;
+	static glm::vec3 Scale;
+
 	static void initialize_objects();
 	static void clean_up();
 	static GLFWwindow* create_window(int width, int height);
