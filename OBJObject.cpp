@@ -1,5 +1,6 @@
 #include "OBJObject.h"
 #include "Window.h"
+
 using namespace std;
 
 float Window::xMax = 0;
@@ -70,7 +71,7 @@ void OBJObject::parse(const char *filepath)
 
 	float x, y, z;	// vertex coordinates
 	float r, g, b;	// vertex color
-	int c1, c2;		// characters read from file
+	int c1 = 0, c2 = 0;		// characters read from file
 	unsigned int f1, f2;		// face integers to be read
 	int errorCheck;		// checks fscanf_s errors
 
@@ -80,7 +81,8 @@ void OBJObject::parse(const char *filepath)
 	// ERROR CHECK: just in case the file can't be found or is corrupt
 	if (fp == NULL) { cerr << "error loading file" << endl; exit(-1); }
 
-	while (!feof(fp)) {
+	//while (!feof(fp)) {
+	while(c1 != EOF){
 		c1 = fgetc(fp);
 		c2 = fgetc(fp);
 
@@ -104,12 +106,14 @@ void OBJObject::parse(const char *filepath)
 
 		// NEW: Face "f" case
 		// Piazza Post #246 stated that we only read in the vertex indices in face
-		else if (c1 == 'f')
+		else if (c1 == 'f' || c2 == 'f')
 		{
 			errorCheck = fscanf_s(fp, "%u//%u ", &f1, &f2);
+
 			// If no error, store and get the next two indices
 			if (errorCheck == 2)
 			{
+				//cerr << "HELLO??? ANYONE HERE???" << endl;
 				indicesOBJ.push_back(f1 - 1);
 				fscanf_s(fp, "%u//%u ", &f1, &f2);
 				indicesOBJ.push_back(f1 - 1);
@@ -118,6 +122,12 @@ void OBJObject::parse(const char *filepath)
 			}
 		}
 	}
+
+	cerr << "Vertices size: " << verticesOBJ.size() << endl;
+	cerr << "Normals size: " << normalsOBJ.size() << endl;
+	cerr << "Indices size: " << indicesOBJ.size() << endl;
+
+	centerScale();	// So they will be automatically centered and scaled
 
 	fclose(fp);   // close the file when done
 }
@@ -167,6 +177,7 @@ void OBJObject::spin(float deg)
 
 void OBJObject::centerScale() 
 {
+	// Get the max/min coordinates
 	Window::xMax = verticesOBJ[0].x;
 	Window::xMin = verticesOBJ[0].x;
 	Window::yMax = verticesOBJ[0].y;
@@ -184,11 +195,21 @@ void OBJObject::centerScale()
 		if (verticesOBJ[i].z < Window::zMin) Window::zMin = verticesOBJ[i].z;
 	}
 
-	glm::vec3 midPoint(-1 * (Window::xMax + Window::xMin + (2*Window::Translation.x)) / 2,
-		-1 * (Window::yMax + Window::yMin + (2 * Window::Translation.y)) / 2,
-		-1 * (Window::zMax + Window::zMin + (2 * Window::Translation.z)) / 2);
+	// CENTER VECTOR
+	glm::vec3 T(-1 * (Window::xMax + Window::xMin) / 2,
+		-1 * (Window::yMax + Window::yMin) / 2,
+		-1 * (Window::zMax + Window::zMin) / 2);
 
-	translate(midPoint);
-	Window::Translation = glm::vec3(0, 0, 0);
+	// SCALE VECTOR
+	// get the biggest of the coord lengths:
+	float length = Window::xMax - Window::xMin;
+	if (Window::yMax - Window::yMin > length) length = Window::yMax - Window::yMin;
+	if (Window::zMax - Window::zMin > length) length = Window::zMax - Window::zMin;
+
+	glm::vec3 S(2 / length, 
+		2 / length, 
+		2 / length);
+
+	toWorld = glm::scale(glm::mat4(1.0f), S) * glm::translate(glm::mat4(1.0f), T) * glm::mat4(1.0f);
 }
 

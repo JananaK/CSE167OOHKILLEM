@@ -26,7 +26,9 @@ glm::mat4 Window::V;
 void Window::initialize_objects()
 {
 	//cube = new Cube();
-	object = new OBJObject("bunny.obj");
+	//object = new OBJObject("bunny.obj");
+	object = new OBJObject("bear.obj");
+	//object = new OBJObject("dragon.obj");
 
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
@@ -106,7 +108,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 void Window::idle_callback()
 {
 	// Call the update function the cube
-	object->update();
+	// object->update();
 }
 
 void Window::display_callback(GLFWwindow* window)
